@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Upload Log File</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <input type="file" name="log_file" accept=".log, .txt, .rtf" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+    <hr>
+    <h3>Uploaded Log Files</h3>
+    <ul class="list-group">
+        {% for file in log_files %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ file }}
+            <div>
+                <a href="{{ url_for('view_log_file', filename=file) }}" class="btn btn-sm btn-info">View</a>
+                <form method="POST" action="{{ url_for('delete_log_file', filename=file) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger ms-2" onclick="return confirm('Are you sure you want to delete this log file?');">Delete</button>
+                </form>
+                <a href="{{ url_for('show_report', filename=file) }}" class="btn btn-sm btn-success ms-2">Generate Threat Report</a>
+            </div>
+        </li>
+        {% else %}
+        <li class="list-group-item">No log files uploaded yet.</li>
+        {% endfor %}
+    </ul>
+    <div class="mt-4 d-flex justify-content-between">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

@@ -11,3 +11,7 @@ fpdf==1.7.2
 pyshark==0.6
 geoip2==4.7.0
 Werkzeug==2.3.8
+reportlab==4.0.7
+matplotlib==3.8.4
+pandas==2.2.2
+python-dotenv==1.0.1

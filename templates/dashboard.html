@@ -10,12 +10,15 @@
     <div class="navbar">
         <span><b>Welcome, {{ current_user.username }}</b></span>
         <a href="{{ url_for('view_result') }}">View Results</a>
+        <a href="{{ url_for('upload_logs') }}" target="_blank">Upload Log File</a>
         <a href="{{ url_for('logout') }}">Logout</a>
     </div>
 
-    <div class="container">
+    <div class="container navbar_for_buttons">
         <h1>Real-Time Dashboard</h1>
+        <!-- <a href="/upload_logs" target="_blanck" class="btn btn-primary mt-4", style="background-color: rgb(42, 81, 207); justify-self: right; " >Upload Logs</a> -->
         <br>
+    </div>
         <div class="summary">
             <div>Total Logs : {{ total_logs }}</div>
             <div>Total Threats : {{ total_threats }}</div>

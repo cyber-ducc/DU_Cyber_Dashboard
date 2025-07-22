@@ -2,106 +2,289 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Daily Cybersecurity Report</title>
+    <title>Threat Report</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
             background-color: #f9f9f9;
         }
-        h1, h2 {
+        .report-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 32px rgba(44,62,80,0.08);
+            padding: 32px 36px 36px 36px;
+            max-width: 1100px;
+            margin: 30px auto;
+        }
+        .report-title {
+            font-size: 2.2rem;
+            font-weight: 800;
             color: #2c3e50;
+            margin-bottom: 8px;
+            text-align: center;
         }
-        table {
+        .filename {
+            color: #6366f1;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .summary-section {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 36px;
+        }
+        .summary-card {
+            background: #f8fafc;
+            border-radius: 14px;
+            box-shadow: 0 2px 10px rgba(99,102,241,0.07);
+            padding: 18px 36px;
+            text-align: center;
+        }
+        .summary-value {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: #6366f1;
+        }
+        .summary-label {
+            font-size: 1rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        .section h2 {
+            margin-top: 36px;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-size: 1.3rem;
+        }
+        .top-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .top-list li {
+            padding: 6px 0;
+            font-size: 1.08rem;
+            color: #374151;
+        }
+        .top-list .count {
+            color: #6366f1;
+            font-weight: 600;
+        }
+        /* Responsive table tweaks */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        .table {
+            table-layout: fixed;
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: white;
+            font-size: 0.97rem;
         }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
+        .table th, .table td {
+            word-break: break-word;
+            vertical-align: top;
+            padding: 8px 6px;
         }
-        th {
-            background-color: #34495e;
-            color: white;
+        .table th {
+            white-space: normal;
         }
-        .section {
-            margin-bottom: 50px;
+        .table ul {
+            padding-left: 1.1em;
         }
-        .timestamp {
-            color: #7f8c8d;
-            font-size: 14px;
-            margin-top: -10px;
-        }
+        /* Shrink some columns for better fit */
+        .table th:nth-child(1), .table td:nth-child(1) { width: 2.5em; }
+        .table th:nth-child(2), .table td:nth-child(2) { width: 8em; }
+        .table th:nth-child(3), .table td:nth-child(3) { width: 18em; } /* Paths wider */
+        .table th:nth-child(4), .table td:nth-child(4) { width: 7em; }
+        .table th:nth-child(5), .table td:nth-child(5) { width: 4em; }
+        .table th:nth-child(6), .table td:nth-child(6) { width: 8em; } /* Reason */
+        .table th:nth-child(7), .table td:nth-child(7) { width: 5em; } /* Threat Level shorter */
+        .table th:nth-child(8), .table td:nth-child(8) { width: 6em; } /* Time Duration shorter */
+        .table th, .table td { min-width: 60px; }
     </style>
 </head>
 <body>
+    <div class="report-container">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="report-title mb-0">Threat Report</h1>
+            <a href="{{ url_for('download_log_report', filename=filename) }}" class="btn btn-success btn-lg" style="min-width:180px;">
+                <i class="bi bi-file-earmark-arrow-down"></i> Download PDF
+            </a>
+        </div>
+        <p class="timestamp text-end">Generated on: <b>{{ date }}</b></p>
+        <h3 class="filename">Log File: <span>{{ filename }}</span></h3>
 
-    <h1>Daily Cybersecurity Report</h1>
-    <p class="timestamp">Generated on: {{ date }}</p>
+        <div class="row summary-section mb-4">
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm summary-card">
+                    <div class="card-body">
+                        <div class="summary-value">{{ total_logs }}</div>
+                        <div class="summary-label">Total Logs</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm summary-card">
+                    <div class="card-body">
+                        <div class="summary-value">{{ total_threats }}</div>
+                        <div class="summary-label">Total Threats</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm summary-card">
+                    <div class="card-body">
+                        <div class="summary-value">{{ unique_ips }}</div>
+                        <div class="summary-label">Unique IPs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="section">
-        <h2>📜 Log Entries</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>IP Address</th>
-                    <th>Status Code</th>
-                    <th>Path</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ log.ip }}</td>
-                    <td>{{ log.status_code }}</td>
-                    <td>{{ log.path }}</td>
-                    <td>{{ log.timestamp }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- <div class="section">
+            <h2>📜 Log Entries</h2>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-bordered align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>IP Address</th>
+                            <th>Status Code</th>
+                            <th>Path</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ log.ip }}</td>
+                            <td><span class="badge bg-info text-dark">{{ log.status_code }}</span></td>
+                            <td><code>{{ log.path }}</code></td>
+                            <td>{{ log.timestamp }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+
+        <div class="section">
+            <h2>🚨 Detected Threats (By IP)</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle align-top">
+                    <thead class="table-danger align-top">
+                        <tr class="align-top">
+                            <th class="align-top">#</th>
+                            <th class="align-top">IP</th>
+                            <th class="align-top">Paths</th>
+                            <th class="align-top">Location</th>
+                            <th class="align-top">Count</th>
+                            <th class="align-top">Reason</th>
+                            <th class="align-top">Threat Level</th>
+                            <th class="align-top">Time Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ip, info in threat_ip_summary.items() %}
+                        <tr class="align-top">
+                            <td class="align-top">{{ loop.index }}</td>
+                            <td class="align-top">{{ ip }}</td>
+                            <td class="align-top">
+                                <ul class="mb-0 ps-3">
+                                    {% for path, path_info in info.paths.items() %}
+                                    <li>
+                                        <code>{{ path }}</code>
+                                        <span class="badge bg-warning text-dark ms-2">{{ path_info.status }}</span>
+                                        <span class="badge bg-secondary ms-1">x{{ path_info.count }}</span>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="align-top">{{ info.location }}</td>
+                            <td class="align-top"><span class="badge bg-primary">{{ info.count }}</span></td>
+                            <td class="align-top">
+                                <ul class="mb-0 ps-3">
+                                    {% for reason in info.reasons %}
+                                    <li>{{ reason }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="align-top">
+                                <ul class="mb-0 ps-3">
+                                    {% for level in info.threat_levels %}
+                                    <li>
+                                        {% if level == 'Medium' %}
+                                            <span class="badge bg-warning text-dark">{{ level }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ level }}</span>
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="align-top">{{ info.time_duration }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 section">
+                <h2>🌐 Top Threat IPs</h2>
+                <ul class="list-group">
+                    {% for ip, count in top_threats.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <b>{{ ip }}</b>
+                        <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6 section">
+                <h2>🌍 Top Countries</h2>
+                <ul class="list-group">
+                    {% for ip, country in geo_data.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <b>{{ country }}</b>
+                        <span class="badge bg-success rounded-pill">{{ ip }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 section">
+                <h2>🔗 Top URLs</h2>
+                <ul class="list-group">
+                    {% for url, count in top_urls.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <code>{{ url }}</code>
+                        <span class="badge bg-secondary rounded-pill">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6 section">
+                <h2>🧑‍💻 Top User Agents</h2>
+                <ul class="list-group">
+                    {% for agent, count in top_agents.items() %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ agent }}</span>
+                        <span class="badge bg-info text-dark rounded-pill">{{ count }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
-
-    <div class="section">
-        <h2>Detected Threats</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>IP</th>
-                    <th>Status</th>
-                    <th>Path</th>
-                    <th>Country</th>
-                    <th>City</th>
-                    <th>Threat Level</th>
-                    <th>Reason</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for threat in threats %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ threat.ip }}</td>
-                    <td>{{ threat.status }}</td>
-                    <td>{{ threat.path }}</td>
-                    <td>{{ threat.country }}</td>
-                    <td>{{ threat.city }}</td>
-                    <td>{{ threat.threat_level }}</td>
-                    <td>{{ threat.reason }}</td>
-                    <td>{{ threat.timestamp }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </body>
 </html>
